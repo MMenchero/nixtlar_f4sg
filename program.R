@@ -7,8 +7,6 @@ library(data.table)
 
 # Installation ----
 #install.packages("nixtlar")
-#devtools::install_github("Nixtla/nixtlar")
-
 library(nixtlar)
 packageVersion("nixtlar")
 
@@ -24,8 +22,6 @@ train_df <- get_train_data(sales0, sales1, "y")
 
 head(train_df) # 3 required columns
 
-train_df$ds <- as.POSIXct(train_df$ds)
-
 # Data visualization ----
 print(paste0("Number of series: ", length(unique(train_df$unique_id))))
 
@@ -34,7 +30,7 @@ print(paste0("Number of dates: ", length(dates)))
 print(paste0("Earliest date: ", dates[1]))
 print(paste0("Last date: ", dates[length(dates)]))
 
-nixtla_client_plot(train_df)
+nixtla_client_plot(train_df, max_insample_length = 100)
 
 # Evaluate Top 5 Competition Solutions ----
 scores <- lapply(1:5, function(i){ # Top 5
@@ -55,7 +51,7 @@ scores_df
 ## Set your API key ----
 # Learn how to set up your API key here: https://nixtla.github.io/nixtlar/articles/setting-up-your-api-key.html
 # Not secure
-# nixtla_client_setup(api_key = "Your API key here")
+nixtla_client_setup(api_key = "Your API key here")
 
 # More secure
 library(usethis)
@@ -76,8 +72,7 @@ timegpt_vanilla <- vn1_competition_evaluation(test_df, fc_vanilla, "TimeGPT")
 
 scores_df <- add_score("TimeGPT vanilla", timegpt_vanilla, scores_df)
 
-
-## TimeGPT long-long horizon model----
+## TimeGPT long-horizon model----
 fc_long_horizon <- nixtla_client_forecast(
   df = train_df,
   h = 13,
@@ -212,12 +207,8 @@ head(fc_quant)
 nixtla_client_plot(train_long, fc_quant, max_insample_length = 13*4)
 
 ## Anomaly detection ----
-dfs_anomalies <- separate_series(train_df, 64)
-
-anomalies_long <- dfs_anomalies$data_long
-
 anomalies <- nixtla_client_detect_anomalies(
-  df = anomalies_long,
+  df = train_long,
   level = c(99)
 )
 
@@ -227,8 +218,12 @@ anomalies |>
   filter(anomaly == TRUE) |>
   head()
 
-nixtla_client_plot(anomalies_long, anomalies, plot_anomalies = TRUE)
+## Cross-validation ----
+cv <- nixtla_client_cross_validation(
+  df = train_long,
+  h = 13,
+  n_windows = 4,
+  step_size = 1
+)
 
-## Cross-validation and historic forecast ----
-# Check out the vignettes
-
+head(cv)

@@ -58,7 +58,7 @@ separate_series <- function(data, min_obs){
 vn1_competition_evaluation <- function(test, forecast, model){
   # Computes competition evaluation
   if(!is.character(forecast$ds)){
-    forecast$ds <- as.character(forecast$ds) # nixtlar returns timestamps for plotting
+    forecast$ds <- format(forecast$ds,"%Y-%m-%d")
   }
 
   res <- merge(forecast, test, by=c("unique_id", "ds"))
