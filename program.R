@@ -1,6 +1,7 @@
 
 # VN1 Forecasting Competition Solution with nixtlar ----
 # -----------------------------------------------------------------------------*
+# Last updates: 2025-04-09
 
 library(tidyverse)
 library(data.table)
